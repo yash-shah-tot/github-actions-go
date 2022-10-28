@@ -22,3 +22,7 @@ test:
 .PHONY: build
 build: clean test
 	mvn clean install
+
+.PHONY: deploy
+deploy:
+	@echo 'Deploying to github repository '

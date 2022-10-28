@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  Build:
     runs-on: ubuntu-latest
     steps:
     - name: checkout repo
@@ -15,8 +15,19 @@ jobs:
       with:
         go-version: 1.19
 
-    - name: Check go version
-      run: go version
-
-    - name: clean application using makefile
+    - name: Makefile clean
       run: make clean
+
+  Deploy:
+    name: Packaging zips to github repo
+    needs: [ Build ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Makefile clean
+        run: make clean
+
+      - name: Deploy
+        run: |
+          make deploy
