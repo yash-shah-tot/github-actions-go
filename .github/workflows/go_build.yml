@@ -1,25 +1,22 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Go
+name: "Build Site Information Microservice zip-archives"
 
 on:
   workflow_dispatch:
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - name: checkout repo
+      uses: actions/checkout@v3
 
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
-        go-version: 1.18
+        go-version: 1.19
 
-    - name: Build
-      run: go build -v ./...
+    - name: Check go version
+      run: go version
 
-    - name: Test
-      run: go test -v ./...
+    - name: clean application using makefile
+      run: make clean
