@@ -37,17 +37,22 @@ jobs:
             patch=$((patch + 1))
           fi
           # Create the new version string
-          newVersion="$major.$minor.$patch"
+          newVersion="v$major.$minor.$patch"
           # Tag the new version
           git tag $newVersion
           # Print the new version
           echo "New version: $newVersion"
+          export tagVersion=$newVersion
+          # Pushing new tag to origin
+          git push origin $newVersion
+
       - name: Create release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NewVersion:  $ {{ tagVersion }}
         with:
-          tag_name: ${{ env.newVersion }}
-          release_name: Release ${{ env.newVersion }}
+          tag_name: ${{ env.NewVersion }}
+          release_name: Release ${{ env.NewVersion }}
           draft: false
           prerelease: false
