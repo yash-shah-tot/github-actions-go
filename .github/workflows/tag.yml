@@ -1,4 +1,4 @@
-name: Create Tag
+name: Generate Tag
 
 on:
   push:
@@ -10,6 +10,11 @@ on:
         description: "Type of release (major, minor, patch)"
         required: true
         default: "patch"
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
 
 jobs:
   generate-tag:
