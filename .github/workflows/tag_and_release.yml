@@ -1,6 +1,9 @@
 name: Create Tag
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
     inputs:
       releaseType:
@@ -45,13 +48,3 @@ jobs:
           export tagVersion=$newVersion
           # Pushing new tag to origin
           git push origin $newVersion
-
-      - name: Create release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ tagVersion }}
-          release_name: Release ${{ tagVersion }}
-          draft: false
-          prerelease: false
