@@ -28,6 +28,7 @@ func collectionGroupQuery(w io.Writer, projectID string) error {
 			return fmt.Errorf("documents iterator: %v", err)
 		}
 		fmt.Println("Value is : ", doc.Data(), doc.Data()["name"])
+		fmt.Println("Testing")
 	}
 
 	return nil
