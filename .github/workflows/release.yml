@@ -21,6 +21,12 @@ jobs:
         with:
           tag: ${{ inputs.tag_name }}
 
+      - name: Tag Check
+        if:  ${{ steps.checkTag.outputs.exists }} != true
+        run: |
+          echo "Please enter a valid tag/version"
+          exit 1
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
