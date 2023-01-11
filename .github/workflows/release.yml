@@ -6,7 +6,6 @@ on:
       tag_version:
         description: 'Name of the tag to create release for'
         required: true
-        default: 'v1.0.0'
         options: ${{ steps.list_tags.outputs.options }}
 
 jobs:
