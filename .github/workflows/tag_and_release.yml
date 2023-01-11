@@ -1,0 +1,51 @@
+name: Create Release and Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: "Type of release (major, minor, patch)"
+        required: true
+        default: "patch"
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Bump version
+        run: |
+          # Get the latest tag
+          latestTag=$(git describe --tags $(git rev-list --tags --max-count=1))
+          # Extract the version numbers from the tag
+          IFS='.' read -ra versionNumbers <<< "$latestTag"
+          major=${versionNumbers[0]}
+          minor=${versionNumbers[1]}
+          patch=${versionNumbers[2]}
+          # Increase the version number based on the input
+          if [ "${{ inputs.releaseType }}" == "major" ]; then
+            major=$((major + 1))
+            minor=0
+            patch=0
+          elif [ "${{ inputs.releaseType }}" == "minor" ]; then
+            minor=$((minor + 1))
+            patch=0
+          else
+            patch=$((patch + 1))
+          fi
+          # Create the new version string
+          newVersion="$major.$minor.$patch"
+          # Tag the new version
+          git tag $newVersion
+          # Print the new version
+          echo "New version: $newVersion"
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.newVersion }}
+          release_name: Release ${{ env.newVersion }}
+          draft: false
+          prerelease: false
