@@ -12,7 +12,7 @@ on:
         default: "patch"
 
 jobs:
-  create-release:
+  create-tags:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
