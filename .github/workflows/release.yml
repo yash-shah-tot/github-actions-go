@@ -23,7 +23,7 @@ jobs:
 
       - name: Tag Check
         run: |
-          if [ ${{ steps.checkTag.outputs.exists }}="true"]
+          if [ ${{ steps.checkTag.outputs.exists }}=true]
           then
             echo "Version valid. Continue ...."
           else
