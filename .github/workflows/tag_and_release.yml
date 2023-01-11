@@ -40,7 +40,7 @@ jobs:
             patch=$((patch + 1))
           fi
           # Create the new version string
-          newVersion="v$major.$minor.$patch"
+          newVersion="$major.$minor.$patch"
           # Tag the new version
           git tag $newVersion
           # Print the new version
