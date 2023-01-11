@@ -3,23 +3,14 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
-      tag_version:
+      tag_name:
         description: 'Name of the tag to create release for'
         required: true
-        options: ${{ steps.list_tags.outputs.options }}
 
 jobs:
-  list_tags:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get list of tags
-        id: list_tags
-        run: |
-          tags=$(git tag -l)
-          echo "::set-output name=options::$tags"
-
   release:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
