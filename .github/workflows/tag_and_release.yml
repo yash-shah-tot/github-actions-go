@@ -50,9 +50,8 @@ jobs:
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NewVersion:  $ {{ tagVersion }}
         with:
-          tag_name: ${{ env.NewVersion }}
-          release_name: Release ${{ env.NewVersion }}
+          tag_name: ${{ tagVersion }}
+          release_name: Release ${{ tagVersion }}
           draft: false
           prerelease: false
