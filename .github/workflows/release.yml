@@ -15,18 +15,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name : Check if tag exists
+      - name : Add tag check flag to github output
         uses: mukunku/tag-exists-action@v1.2.0
         id: checkTag
         with:
           tag: ${{ inputs.tag_name }}
 
       - name: Tag Check
-#        if:  ${{ steps.checkTag.outputs.exists }} != true
         run: |
-          echo ${{ steps.checkTag.outputs.exists }}
-          echo "Please enter a valid tag/version"
-          exit 1
+          if [ ${{ steps.checkTag.outputs.exists }} ]
+          then
+            echo "Version valid. Continue ...."
+          else
+            echo "Please enter a valid tag/version"
+            exit 1
+          fi
 
 #      - name: Create Release
 #        id: create_release
