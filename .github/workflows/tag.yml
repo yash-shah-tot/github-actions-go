@@ -1,15 +1,16 @@
 name: Generate Tag
-
 on:
   push:
     branches:
       - master
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
     inputs:
-      releaseType:
-        description: "Type of release (major, minor, patch)"
+      bumpVersion:
+        description: 'Version to bump major, minor or patch'
         required: true
-        default: "patch"
+        default: 'patch'
         type: choice
         options:
           - major
@@ -18,41 +19,27 @@ on:
 
 jobs:
   generate-tag:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v2
+
+      # Bump version on merging Pull Requests with specific labels.
+      # (bump:major,bump:minor,bump:patch)
+      - id: bumper
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: haya14busa/action-bumpr@v1
         with:
-          fetch-depth: 0
-      - name: Bump version
-        run: |
-          # Get the latest tag
-          git describe --tags $(git rev-list --tags --max-count=1)
-          latestTag=$(git describe --tags $(git rev-list --tags --max-count=1))
-          # latestTag=$(git describe --tags $(git tag | sort -V | tail -1))
-          echo $latestTag
-          # Extract the version numbers from the tag
-          IFS='.' read -ra versionNumbers <<< "$latestTag"
-          major=${versionNumbers[0]}
-          minor=${versionNumbers[1]}
-          patch=${versionNumbers[2]}
-          # Increase the version number based on the input
-          if [ "${{ inputs.releaseType }}" == "major" ]; then
-            major=$((major + 1))
-            minor=0
-            patch=0
-          elif [ "${{ inputs.releaseType }}" == "minor" ]; then
-            minor=$((minor + 1))
-            patch=0
-          else
-            patch=$((patch + 1))
-          fi
-          # Create the new version string
-          newVersion="$major.$minor.$patch"
-          # Tag the new version
-          git tag $newVersion
-          # Print the new version
-          echo "New version: $newVersion"
-          export tagVersion=$newVersion
-          # Pushing new tag to origin
-          git push origin $newVersion
+          default_bump_level: patch
+
+  generate-tag-manual:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: manual-trigger
+        if: github.event.inputs.bumpVersion != '' && github.event.inputs.bumpVersion != null
+        uses: haya14busa/action-bumpr@v1
+        with:
+          default_bump_level: ${{ inputs.bumpVersion }}
