@@ -27,7 +27,10 @@ jobs:
       - name: Bump version
         run: |
           # Get the latest tag
-          latestTag=$(git describe --tags $(git rev-list --tags --max-count=1))
+          git describe --tags $(git rev-list --tags --max-count=1)
+          # latestTag=$(git describe --tags $(git rev-list --tags --max-count=1))
+          latestTag=$(git describe --tags $(git tag | sort -V | tail -1))
+          echo $latestTag
           # Extract the version numbers from the tag
           IFS='.' read -ra versionNumbers <<< "$latestTag"
           major=${versionNumbers[0]}
