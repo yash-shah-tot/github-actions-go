@@ -1,3 +1,5 @@
+VERSION:=$VERSION
+
 .PHONY: audit
 audit:
 	@echo 'Formatting code...'
@@ -21,7 +23,7 @@ test:
 
 .PHONY: build
 build: clean test
-	mvn clean install
+	@echo ${VERSION}
 
 .PHONY: deploy
 deploy:

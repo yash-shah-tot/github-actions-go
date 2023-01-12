@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name : Add tag check flag to github output
         uses: mukunku/tag-exists-action@v1.2.0
@@ -30,6 +30,14 @@ jobs:
             exit 1
           fi
 
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+           go-version: 1.19
+
+      - name: Makefile build
+        run: make build VERSION=v1.0.2
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@latest
@@ -43,6 +51,8 @@ jobs:
 
       - run: |
           echo ${{ steps.create_release.outputs.upload_url }}
+          pwd
+          ls -ltr
 
 #      - name: Upload Release Asset
 #        id: upload-release-asset
@@ -54,6 +64,7 @@ jobs:
 #          asset_path: ./site-info-svc-1.0.13-get-retailer.zip
 #          asset_name: site-info-svc-1.0.13-get-retailer.zip
 #          asset_content_type: application/zip
+
 
       - name: Upload Release Assets
         id: upload-release-assets
