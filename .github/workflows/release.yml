@@ -32,7 +32,7 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: actions/create-release@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -40,3 +40,6 @@ jobs:
           release_name: Release ${{ inputs.tag_name }}
           draft: false
           prerelease: false
+
+      - run: |
+          echo ${{ steps.create_release.outputs.upload_url }}
