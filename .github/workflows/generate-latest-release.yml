@@ -1,0 +1,111 @@
+name: Generate Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Name of the tag to create release for'
+        required: true
+
+jobs:
+  release:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [ 1.19 ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name : Add tag check flag to github output
+        uses: mukunku/tag-exists-action@v1.2.0
+        id: checkTag
+        with:
+          tag: ${{ inputs.tag_name }}
+
+      - name: Tag Check
+        run: |
+          if ${{ steps.checkTag.outputs.exists }} ; then
+            echo "Version valid. Continue ...."
+          else
+            echo "Please enter a valid tag/version"
+            exit 1
+          fi
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Configure access to download dependencies in Go
+        shell: bash
+        run: git config --global url."https://${{ secrets.TAKEOFFBOT_TOKEN }}:@github.com/TakeoffTech/".insteadOf "https://github.com/TakeoffTech/"
+
+      - name: Load Cache
+        uses: actions/cache@v3
+        with:
+          # In order:
+          # * Module download cache
+          path: |
+            ~/go/pkg/mod
+            ~/Library/Caches/go-build
+          key: go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-${{ matrix.go-version }}-
+
+      - name: Test with untidy Go module
+        id: bad
+        continue-on-error: true
+        run: |
+          go mod tidy
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        id: lint
+        with:
+          go-version: ${{ matrix.go-version }}
+          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+          version: v1.50.1
+          # hack for files and lines viewing
+          skip-cache: true
+          args: "-v --out-${NO_FUTURE}format colored-line-number"
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+        with:
+          project_id: "project-id"
+          install_components: 'beta,cloud-firestore-emulator,pubsub-emulator'
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+
+      - name: 'Use gcloud emulator'
+        run: |
+          gcloud beta emulators firestore start --quiet --project "project-id" --host-port=localhost:8040 &
+          gcloud beta emulators pubsub start --quiet --project "project-id" --host-port=localhost:8041 &
+          export FIRESTORE_EMULATOR_HOST=localhost:8040
+          export PUBSUB_EMULATOR_HOST=localhost:8041
+
+      - name: Makefile build
+        run: make build VERSION=${{ inputs.tag_name }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          release_name: Release ${{ inputs.tag_name }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Assets
+        id: upload-release-assets
+        uses: dwenegar/upload-release-assets@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_id: ${{ steps.create_release.outputs.id }}
+          assets_path: ./target/

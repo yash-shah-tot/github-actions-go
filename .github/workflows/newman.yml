@@ -1,0 +1,20 @@
+name: Integration test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - run: npm install -g newman
+      
+      - name: newman-test
+        run: newman run integration-test/SiteInfo-TestCases.postman_collection.json -e integration-test/newmanEnv.postman_environment.json --global-var "BEARERTOKEN=${{ secrets.BEARERTOKEN }}"

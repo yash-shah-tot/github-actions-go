@@ -1,0 +1,1682 @@
+openapi: 3.0.0
+info:
+  title: Site Information Micro Service
+  version: '1.0'
+  description: An API specification to manage retailers/sites/spokes.
+  contact:
+    name: Shyamal Pandya
+    url: takeoff.com
+    email: shyamal.pandya@takeoff.com
+tags:
+  - name: admin
+  - name: retailer-info
+  - name: site-info
+  - name: spoke-info
+paths:
+  '/retailers/{retailer_id}':
+    parameters:
+      - $ref: '#/components/parameters/RetailerIdPath'
+    get:
+      summary: Get retailer information by retailer id
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+      tags:
+        - retailer-info
+      responses:
+        '200':
+          $ref: '#/components/responses/RetailerResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      operationId: get-retailer
+      description: Retrieve the information of the retailer with the matching retailer ID.
+    patch:
+      summary: Update retailer Information
+      operationId: patch-retailer
+      tags:
+        - retailer-info
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+      responses:
+        '200':
+          $ref: '#/components/responses/RetailerResponse'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '412':
+          $ref: '#/components/responses/412-Precondition-failed'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: Update the information of an existing retailer.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Retailer'
+            examples:
+              Example 1:
+                $ref: '#/components/examples/create-update-retailer-object'
+        description: 'Patch user properties to update., Note: Only will the name will allowed for changed'
+        x-examples:
+          Update Name:
+            name: Albertsons
+  '/retailers/{retailer_id}:deactivate':
+    parameters:
+      - name: retailer_id
+        in: path
+        required: true
+        description: retailer deactivate
+        schema:
+          type: string
+    post:
+      summary: Deactivate retailer by retailer id
+      operationId: post-retailer-deactivate
+      tags:
+        - retailer-info
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+      responses:
+        '200':
+          $ref: '#/components/responses/200-retailer-deactivated'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: Deactivate existing retailer.
+  '/sites/{site_id}:undelete':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    patch:
+      summary: Undelete a retailer which has been soft deleted
+      operationId: patch-site-undelete
+      tags:
+        - admin
+      responses:
+        '200':
+          description: retailer undeleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Retailer'
+            Update User Rebecca Baker:
+              examples:
+                response:
+                  value:
+                    id: 13
+                    firstName: Rebecca
+                    lastName: Baker
+                    email: rebecca@gmail.com
+                    dateOfBirth: '1985-10-02'
+                    emailVerified: false
+                    createDate: '2019-08-24'
+        '404':
+          description: retailer not found
+          content:
+            application/json:
+              schema:
+                nullable: true
+      description: |-
+        Undelete a retailer which has been soft deleted.
+        Also ensure that as part of undeleting an entity the message is added to the message bus which indicates that the entity has been re-created. This would ensure that downstream systems take appropriate actions either by re-creating/enabling the resources wherever required.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+        description: Patch user properties to update.
+        x-examples:
+          Update Name:
+            name: Albertsons
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+  '/retailers/{retailer_id}:undelete':
+    parameters:
+      - $ref: '#/components/parameters/RetailerIdPath'
+    patch:
+      summary: Undelete a retailer which has been soft deleted
+      operationId: patch-retailer-undelete
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+      tags:
+        - admin
+      responses:
+        '200':
+          description: retailer undeleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Retailer'
+            Update User Rebecca Baker:
+              examples:
+                response:
+                  value:
+                    id: 13
+                    firstName: Rebecca
+                    lastName: Baker
+                    email: rebecca@gmail.com
+                    dateOfBirth: '1985-10-02'
+                    emailVerified: false
+                    createDate: '2019-08-24'
+        '404':
+          description: retailer not found
+          content:
+            application/json:
+              schema:
+                nullable: true
+      description: |-
+        Undelete a retailer which has been soft deleted.
+        Also ensure that as part of undeleting an entity the message is added to the message bus which indicates that the entity has been re-created. This would ensure that downstream systems take appropriate actions either by re-creating/enabling the resources wherever required.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+        description: Patch user properties to update.
+        x-examples:
+          Update Name:
+            name: Albertsons
+  '/retailers/{retailer_id}/auditLogs':
+    parameters:
+      - $ref: '#/components/parameters/RetailerIdPath'
+    get:
+      summary: Endpoint to fetch the audit logs for the Retailers
+      tags:
+        - retailer-info
+      responses:
+        '200':
+          $ref: '#/components/responses/AuditLogsResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      operationId: get-retailers-auditLogs
+      description: 'audit information about the retailer, any changes done to the entity would be returned back in a reverse chronological order.'
+      parameters:
+        - $ref: '#/components/parameters/PageSizeHeader'
+        - $ref: '#/components/parameters/PageTokenHeader'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+  /retailers:
+    get:
+      summary: Get all Retailers
+      tags:
+        - retailer-info
+      responses:
+        '200':
+          $ref: '#/components/responses/RetailersResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+        default:
+          $ref: '#/components/responses/DefaultErrorResponse'
+      operationId: get-retailers
+      description: Returns the list of all the retailers in the takeoff system
+      parameters:
+        - $ref: '#/components/parameters/DeletedQueryParam'
+        - $ref: '#/components/parameters/PageSizeHeader'
+        - $ref: '#/components/parameters/PageTokenHeader'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+    post:
+      summary: Create a new Retailer
+      operationId: post-retailers
+      tags:
+        - retailer-info
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+      responses:
+        '201':
+          $ref: '#/components/responses/201-create-retailer'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: Create a new retailer as a part of the takeoff eco-system
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Retailer'
+            examples:
+              example-1:
+                $ref: '#/components/examples/create-update-retailer-object'
+        description: ''
+  /sites:
+    parameters: []
+    get:
+      summary: Get all sites under a retailer
+      tags:
+        - site-info
+      responses:
+        '200':
+          $ref: '#/components/responses/SitesResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      operationId: get-sites
+      description: 'Fetches all the sites associated with a retailer, the retailer information will part of the authentication token'
+      parameters:
+        - $ref: '#/components/parameters/PageSizeHeader'
+        - $ref: '#/components/parameters/PageTokenHeader'
+        - $ref: '#/components/parameters/DeletedQueryParam'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+    post:
+      tags:
+        - site-info
+      summary: Create Site API
+      operationId: post-site
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      responses:
+        '200':
+          $ref: '#/components/responses/SiteResponse'
+        '412':
+          $ref: '#/components/responses/412-Precondition-failed'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: 'An API to create sites in the context of a retailer. Note: The Site Id has to be unique across all the retailers and this needs to ensured'
+  '/sites/{site_id}':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    get:
+      summary: Fetches a particular site in the context of a retailer
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      tags:
+        - site-info
+      responses:
+        '200':
+          $ref: '#/components/responses/SiteResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      operationId: get-site
+      description: Fetches a particular site in the context of a retailer
+    patch:
+      tags:
+        - site-info
+      summary: Update a site
+      operationId: patch-site
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      responses:
+        '200':
+          $ref: '#/components/responses/SiteResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '412':
+          $ref: '#/components/responses/412-Precondition-failed'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: The API would be used to update the site entity in the context of a retailer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Site'
+  '/sites/{site_id}/auditLogs':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    get:
+      summary: Endpoint to fetch the audit logs for the Retailers
+      tags:
+        - site-info
+      responses:
+        '200':
+          $ref: '#/components/responses/AuditLogsResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      operationId: get-site-auditLogs
+      description: 'audit information about the site, any changes done to the entity would be returned back in a reverse chronological order.'
+      parameters:
+        - $ref: '#/components/parameters/PageSizeHeader'
+        - $ref: '#/components/parameters/PageTokenHeader'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+  '/sites/{site_id}:provisioning':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    patch:
+      summary: Provision a new site
+      operationId: 'patch-sites-siteid-:provisioning'
+      responses:
+        '200':
+          $ref: '#/components/responses/200-No-Content-status-changed'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '412':
+          $ref: '#/components/responses/412-Precondition-failed'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: 'When everything is checked, the provisioning process starts, which triggers all other child processes. site moves into a ready state when every required provisioning process is completed. If something goes wrong, we consider provisioning_failed'
+      parameters:
+        - $ref: '#/components/parameters/EtagHeader'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      tags:
+        - site-info
+  '/sites/{site_id}:inactive':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    patch:
+      summary: Transition the site to inactive state
+      operationId: patch-sites-siteid-inactive
+      responses:
+        '200':
+          $ref: '#/components/responses/SiteResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '412':
+          $ref: '#/components/responses/412-Precondition-failed'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: Transition the site to a inactive state where the site is provisioned but not used in business processes
+      parameters:
+        - $ref: '#/components/parameters/EtagHeader'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      tags:
+        - site-info
+  '/sites/{site_id}:active':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    patch:
+      summary: Transition the site to active state
+      operationId: patch-sites-siteid-active
+      responses:
+        '200':
+          $ref: '#/components/responses/SiteResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '412':
+          $ref: '#/components/responses/412-Precondition-failed'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: Transition the site to active state when everything is correctly provisioned and the site is ready to use.
+      parameters:
+        - $ref: '#/components/parameters/EtagHeader'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      tags:
+        - site-info
+  '/sites/{site_id}:provisioning-failed':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    patch:
+      summary: Move the site to a Provisioning failed state
+      operationId: patch-sites-siteid-provisioning-failed
+      responses:
+        '200':
+          $ref: '#/components/responses/SiteResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '412':
+          $ref: '#/components/responses/412-Precondition-failed'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: 'when provisioning fails, we can not use site, and we need to fix something and restart the process.Moving to this state ensures that we don''t use the site the way it is configured currently'
+      parameters:
+        - $ref: '#/components/parameters/EtagHeader'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      tags:
+        - site-info
+  '/sites/{site_id}:deprovisioning':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    patch:
+      summary: Move the site to a deprovisioning state when the site is being deprecated
+      operationId: patch-sites-siteid-deprovisioning
+      responses:
+        '200':
+          $ref: '#/components/responses/SiteResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '412':
+          $ref: '#/components/responses/412-Precondition-failed'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: When provisioning fails or the retailer chooses to leave the takeoff platform or say the site is being shutdown then move the site to a deprovisioning state.
+      parameters:
+        - $ref: '#/components/parameters/EtagHeader'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      tags:
+        - site-info
+  '/sites/{site_id}:deprecated':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    patch:
+      summary: Move the site to a deprovisioning state when the site is being deprecated
+      operationId: patch-sites-siteid-deprecated
+      responses:
+        '200':
+          $ref: '#/components/responses/SiteResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '412':
+          $ref: '#/components/responses/412-Precondition-failed'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      description: |-
+        When provisioning fails or the retailer chooses to leave the takeoff platform or say the site is being shutdown and the site has been completely deprovisioned then move the site to deprecated state and ensuring the site is no longer operational.
+        At this point the site would be marked of deprecated.
+      parameters:
+        - $ref: '#/components/parameters/EtagHeader'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      tags:
+        - site-info
+  '/sites/{site_id}/spokes':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+    post:
+      summary: Operation to create a spoke and attach the spoke to the site
+      operationId: post-site-siteId-spokes
+      responses:
+        '201':
+          description: Created
+          headers:
+            location:
+              $ref: '#/components/headers/location'
+        default:
+          $ref: '#/components/responses/DefaultErrorResponse'
+      description: |
+        An API to create a spoke in the context of a site. In a retailers design model it's possible to have same spoke being served by more than one sites. That is a possible for following reasons 
+        1] spoke is closely located to more than one site. 
+        2] In cases when one of the site is down the retailer may want to re-route it's orders to another close by site in which case there needs to be a way to transfer orders to another nearby site for processing and the spokes need to be associated with a new site.
+
+        If the spoke is not present it would create one and associate the site with the spoke.
+        Note:it's being assumed that no two spokes can have the same name in the context of a retailer.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Spokes'
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      tags:
+        - spoke-info
+    get:
+      summary: Get all the spokes in the context of a site
+      operationId: get-sites-site_id-spokes
+      parameters:
+        - $ref: '#/components/parameters/PageSizeHeader'
+        - $ref: '#/components/parameters/PageTokenHeader'
+        - $ref: '#/components/parameters/DeletedQueryParam'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      responses:
+        '200':
+          $ref: '#/components/responses/SpokesResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+        default:
+          $ref: '#/components/responses/DefaultErrorResponse'
+      description: 'fetches all the spokes associated to a site. '
+      tags:
+        - spoke-info
+        - site-info
+  '/sites/{site_id}/spokes/{spoke_id}:attach':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+      - $ref: '#/components/parameters/SpokeIdPath'
+      - $ref: '#/components/parameters/RetailerIdHeader'
+      - $ref: '#/components/parameters/AcceptVersionHeader'
+      - $ref: '#/components/parameters/correlationIdHeader'
+    patch:
+      summary: Associate a spoke with a site
+      operationId: patch-sites-site_id-spokes-spoke_id_attach
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      responses:
+        '200':
+          $ref: '#/components/responses/200-Ok-spoke-attached'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+      tags:
+        - site-info
+      description: Associates a spoke with a site where the relationship does not already exist
+  '/sites/{site_id}/spokes/{spoke_id}:detach':
+    parameters:
+      - $ref: '#/components/parameters/SiteIdPath'
+      - $ref: '#/components/parameters/SpokeIdPath'
+    patch:
+      summary: Detach a spoke from a site
+      operationId: patch-spoke-detach
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      responses:
+        '200':
+          description: OK
+      tags:
+        - site-info
+      description: Detach a spoke with a site where the relationship already exist
+  /spokes:
+    parameters:
+      - $ref: '#/components/parameters/AcceptVersionHeader'
+      - $ref: '#/components/parameters/correlationIdHeader'
+      - $ref: '#/components/parameters/RetailerIdHeader'
+    get:
+      summary: Get all Spokes in the context of a retailer
+      operationId: get-retailers-retailer_id-spokes
+      responses:
+        '200':
+          $ref: '#/components/responses/SpokesResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+        default:
+          $ref: '#/components/responses/DefaultErrorResponse'
+      description: API To fetch all the Spokes in the context of a retailer
+      tags:
+        - spoke-info
+      parameters:
+        - $ref: '#/components/parameters/DeletedQueryParam'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+  '/spokes/{spoke_id}':
+    parameters:
+      - $ref: '#/components/parameters/SpokeIdPath'
+    get:
+      summary: Fetches a particular Spoke created in the context of a retailer
+      operationId: get-retailers-retailer_id-spokes-spoke_id
+      parameters:
+        - $ref: '#/components/parameters/RetailerIdHeader'
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+      responses:
+        '200':
+          $ref: '#/components/responses/SpokeResponse'
+        '400':
+          $ref: '#/components/responses/400-Bad-Request'
+        '404':
+          $ref: '#/components/responses/404-Object-Not-Found'
+        '500':
+          $ref: '#/components/responses/500-Internal-Server-Error'
+        default:
+          $ref: '#/components/responses/DefaultErrorResponse'
+      tags:
+        - spoke-info
+      description: Gets a particular spoke in the context of a retailer
+    delete:
+      summary: Delete an Spoke Information API
+      operationId: delete-retailers-retailer_id-spokes-spoke_id
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/RetailerIdHeader'
+      responses:
+        '200':
+          description: OK
+      description: |
+        Once the spoke is no longer associated with any of the sites it's safe to be deleted. The API take care of deleting the  spoke if there are no sites associated to the same. If there are any it shall fail with an appropriate error.
+      tags:
+        - spoke-info
+  '/siteInfoservice/{entity}:requeue_event':
+    parameters:
+      - $ref: '#/components/parameters/EntityParam'
+    patch:
+      summary: re-queue any entity creation/deletion event on to the event bus
+      operationId: patch-siteInfoservice-entity-requeue_event
+      responses:
+        '200':
+          description: OK
+      description: |-
+        This API would take care of requeuing any entity creation/deletion events for retailers as well as sites.
+        This would help to handle any lifecycle events for new applications that get added post the creation of an entity and it would also take care of cases where some of the event where not handled due to application malfunction.
+        In case of delete it should send messages for both the entities which were soft deleted as well as hard deleted ( hard deleted should be kept somewhere for this use cases for a period of 7 days ) 
+        The event consumers need to be idempotent when consuming the event. i.e. if they have already created/deleted resources in the context of the event being published then it should simply ignore the event.
+      parameters:
+        - $ref: '#/components/parameters/AcceptVersionHeader'
+        - $ref: '#/components/parameters/correlationIdHeader'
+        - $ref: '#/components/parameters/DeletedQueryParam'
+        - schema:
+            type: boolean
+          in: query
+          name: deletion
+          description: 'Requeue deletion events ( for all the items which have been soft deleted as well as hard deleted) '
+      tags:
+        - admin
+servers:
+  - url: 'http://localhost:3000'
+components:
+  schemas:
+    Retailer:
+      title: Retailer
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          pattern: '^[a-zA-Z0-9]+(?:[. _-]*[a-zA-Z0-9]+)*$'
+        updated_time:
+          type: string
+        created_by:
+          type: string
+        deactivated_by:
+          type: string
+        updated_by:
+          type: string
+        created_time:
+          format: date-time
+          type: string
+        deactivated_time:
+          format: date-time
+          type: string
+        etag:
+          format: string
+          type: string
+          description: An attribute used to validate the freshness of the object being modified (calculated field)
+      required:
+        - name
+      x-examples:
+        deleted-retailer:
+          $ref: '#/components/examples/get-valid-retailer-response-after-delete'
+        active-retailer:
+          $ref: '#/components/examples/get-valid-retailer-response'
+      description: Retailer object which stores the basic details for a retailer
+    Location:
+      title: Location
+      type: object
+      description: An object to hold the location of site related information
+      properties:
+        lat:
+          type: number
+        long:
+          type: number
+    Site:
+      title: Site
+      type: object
+      description: An object to hold the site related information
+      x-examples:
+        example-1:
+          $ref: '#/components/examples/get-valid-site-response'
+        Example 1:
+          $ref: '#/components/examples/get-valid-site-response-deleted'
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          maxLength: 128
+          minLength: 5
+        retailer_id:
+          type: string
+        retailer_site_id:
+          type: string
+        update_time:
+          type: string
+        create_time:
+          type: string
+        created_by:
+          type: string
+        deactivated_by:
+          type: string
+        updated_by:
+          type: string
+        deactivated_time:
+          type: string
+        status:
+          $ref: '#/components/schemas/siteStatus'
+        location:
+          $ref: '#/components/schemas/Location'
+        timezone:
+          type: string
+        etag:
+          type: string
+          description: 'Etag value, A calculated field will only be sent when an array of objects  is sent'
+          format: string
+      required:
+        - id
+        - name
+    siteStatus:
+      description: enumeration which explains various types of statuses supported for a site
+      type: string
+      enum:
+        - draft
+        - active
+        - inactive
+    Response:
+      type: object
+      x-examples:
+        Example 1:
+          $ref: '#/components/examples/404-Error-code'
+        Example 2:
+          $ref: '#/components/examples/400-Error-code'
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        errors:
+          type: array
+          description: Optional array of errors returned in case if  there is an error to be taken care off
+          items:
+            type: string
+      required:
+        - code
+        - message
+      title: Response
+      description: A response object sent back when there is nothing to be returned or an error to be returned
+    Spoke:
+      title: Spoke
+      type: object
+      description: A log entry to describe the change that has happened to an entity
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          maxLength: 128
+          minLength: 5
+        retailer_id:
+          type: string
+        update_time:
+          type: string
+        create_time:
+          type: string
+        created_by:
+          type: string
+        deactivated_by:
+          type: string
+        updated_by:
+          type: string
+        deactivated_time:
+          type: string
+        location:
+          $ref: '#/components/schemas/Location'
+        timezone:
+          type: string
+        etag:
+          type: string
+          description: 'Etag value, A calculated field will only be sent when an array of objects  is sent'
+          format: string
+      required:
+        - id
+        - name
+    Spokes:
+      title: Spokes
+      type: array
+      items:
+        $ref: '#/components/schemas/Spoke'
+    AuditLog:
+      type: object
+      properties:
+        changed_by:
+          type: string
+        change_type:
+          type: string
+        change_details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              old_value:
+                type: string
+              new_value:
+                type: string
+        changed_at:
+          type: string
+      x-examples:
+        Example 1:
+          changed_by: uttam.agrawal@freshmart.com
+          change_type: delete
+          change_details:
+            - field: name
+              old_value: Santa Maria
+              new_value: Santa Monica
+          changed_at: '2022-12-09T07:17:01Z'
+      description: ''
+  examples:
+    get-valid-retailer-response:
+      value:
+        id: rsj02x
+        name: Santa Maria
+        created_by: srinivas.raju@freshmart.com
+        updated_by: kunal.ganjawala@freshmart.com
+        created_time: '2022-12-09T07:15:50Z'
+        updated_time: '2022-12-09T07:15:50Z'
+    get-valid-retailer-response-after-delete:
+      value:
+        id: rsj02w
+        name: Santa Maria
+        created_by: srinivas.raju@freshmart.com
+        updated_by: kunal.ganjawala@freshmart.com
+        deactivated_by: uttam.agarwal@freshmart.com
+        created_time: '2022-12-09T07:15:50Z'
+        updated_time: '2022-12-09T07:17:01Z'
+        deactivated_time: '2022-12-09T07:17:01Z'
+    404-Error-code:
+      value:
+        code: 400
+        message: Object Not found
+    400-Error-code:
+      value:
+        code: 400
+        message: Request validation failed
+        errors:
+          - 'Unsupported value for header : Accept-Version'
+    500-Internal-server-Error:
+      value:
+        code: 500
+        message: Internal server error occurred. Please check logs for more details.
+    create-update-retailer-object:
+      value:
+        name: Santa Maria
+    412-Precondition-failed:
+      value:
+        code: 400
+        message: 'If-Match header value incorrect, please get the latest and try again'
+    Retailer-deleted-successfully:
+      value:
+        code: 204
+        message: Retailer r234se deleted successfully
+    Status-changed-successfully:
+      value:
+        code: 204
+        message: Site status changed successfully
+    get-valid-site-response:
+      value:
+        id: s8sjdfe
+        name: site name12
+        retailer_site_id: ABS134
+        retailer_id: r6eme5
+        status: draft
+        timezone: Europe/Berlin
+        location:
+          lat: 54.25
+          long: 13.134
+        created_by: arijit.singh@tseries.com
+        updated_by: jubin.nautiyal@tseries.com
+        created_time: '2022-12-12T12:16:38Z'
+        updated_time: '2022-12-12T12:16:38Z'
+    get-valid-site-response-deleted:
+      value:
+        id: s8sjdf
+        name: site name12
+        retailer_site_id: ABS134
+        retailer_id: r6eme5
+        status: draft
+        timezone: Europe/Berlin
+        location:
+          lat: 54.25
+          long: 13.134
+        created_by: arijit.singh@tseries.com
+        updated_by: jubin.nautiyal@tseries.com
+        created_time: '2022-12-12T12:16:38Z'
+        deactivated_by: kishore.kumar@tseries.com
+        updated_time: '2022-12-14T07:17:01Z'
+        deactivated_time: '2022-12-14T07:17:01Z'
+    get-all-sites:
+      value:
+        - id: s5va08
+          name: McCullough Inc
+          retailer_site_id: NcVW1C
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: asha.bhonsle@freshmart.com
+          updated_by: kishore.kumar@freshmart.com
+          created_time: '2022-12-12T12:37:32Z'
+          updated_time: '2022-12-12T12:37:32Z'
+          etag: c0025cb778d5b19ff200dc5b8d9ed2b27e06ecd195d8a012b39cda6a9492d375
+        - id: s8sjdf
+          name: site name12
+          retailer_site_id: ABS134
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: shreya.ghosal@freshmart.com
+          created_time: '2022-12-12T12:16:38Z'
+          updated_time: '2022-12-12T12:16:38Z'
+          etag: 919c03695cd44d968a654fcf53479267c97393c3818f5273f27d061257daa707
+        - id: sc1ihy
+          name: Lockman LLC
+          retailer_site_id: gfGn9A
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: shankar.mahadevan@freshmart.com
+          created_time: '2022-12-12T12:37:52Z'
+          updated_time: '2022-12-12T12:37:52Z'
+          etag: 54b54b2b575a0f4680b3d57d8913c31fcd3a181e6c5eb4a2705f33dbb1dd5bb2
+        - id: sg5gcy
+          name: Rau Inc
+          retailer_site_id: MunMH
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:48Z'
+          updated_time: '2022-12-12T12:37:48Z'
+          etag: f0f6df415a00dfe10990f980017fa3a2f3f4a4f2be64fc49f910a771bdfad93d
+        - id: sh7iof
+          name: Kuphal Group
+          retailer_site_id: ENRjS
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:10Z'
+          updated_time: '2022-12-12T12:37:10Z'
+          etag: 81014def4f627e26a6944f82071afc7291a74d3527ff5d4f7731b09facfef778
+        - id: sl5w3x
+          name: Torp - Beer
+          retailer_site_id: PJwtj
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:22Z'
+          updated_time: '2022-12-12T12:37:22Z'
+          etag: 462eb06e7b0d57a21a9f9424ee0944f980c9cc20905f4128dd3a5a5ac5d59e74
+        - id: snv0yu
+          name: Wolf Inc
+          retailer_site_id: 9ypt6z
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:49Z'
+          updated_time: '2022-12-12T12:37:49Z'
+          etag: a744f82214fb01fb08a9d86d1c7fdd53324e6eaf650d48362b977b2a87a54221
+        - id: spxi6a
+          name: Wiza Inc
+          retailer_site_id: muEaD
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: bryan.adams@freshmart.com
+          updated_by: shankar.mahadevan@freshmart.com
+          created_time: '2022-12-12T12:37:54Z'
+          updated_time: '2022-12-12T12:37:54Z'
+          etag: 111e5f0eaa984b49a07171b7daa5818ae60e364871ca9171698b3a09c74bfa25
+        - id: sq282f
+          name: White - Maggio
+          retailer_site_id: cm2tO
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:41Z'
+          updated_time: '2022-12-12T12:37:41Z'
+          etag: 5c621c021e8e28cfae8762c7eb2559519943dc766828ab43224ff1c0725d5eb4
+        - id: srj4xg
+          name: Schaden - Windler
+          retailer_site_id: YNtus
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: bryan.adams@freshmart.com
+          updated_by: shankar.mahadevan@freshmart.com
+          created_time: '2022-12-12T12:37:19Z'
+          updated_time: '2022-12-12T12:37:19Z'
+          etag: 23ab4544d04be83c59f28f59c7b7b105f742b6928125dac7491d42fc63152e32
+        - id: sv7fiq
+          name: Raynor and Sons
+          retailer_site_id: YbRGEQ
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:46Z'
+          updated_time: '2022-12-12T12:37:46Z'
+          etag: 08583f7590d9d1d0707d736be1d960a2e6c8fefdd4e9d4200582d8299539beef
+        - id: sxjxqq
+          name: Herzog - Hoppe
+          retailer_site_id: AYUsG3
+          retailer_id: r6eme5
+          status: draft
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:51Z'
+          updated_time: '2022-12-12T12:37:51Z'
+          etag: 4562d92ca3b5b5e050108b9a751f75cd1661e679ea02bc0219549108d1860e17
+    get-valid-spoke-response:
+      value:
+        id: p8sjdfe
+        name: spoke name12
+        retailer_id: r6eme5
+        timezone: Europe/Berlin
+        location:
+          lat: 54.25
+          long: 13.134
+        created_by: arijit.singh@tseries.com
+        updated_by: jubin.nautiyal@tseries.com
+        created_time: '2022-12-12T12:16:38Z'
+        updated_time: '2022-12-12T12:16:38Z'
+    get-valid-spoke-response-after-deactivate:
+      value:
+        id: p8sjdfe
+        name: spoke name12
+        retailer_id: r6eme5
+        timezone: Europe/Berlin
+        location:
+          lat: 54.25
+          long: 13.134
+        created_by: arijit.singh@tseries.com
+        deactivated_by: max.retailer@retailer.com
+        updated_by: jubin.nautiyal@tseries.com
+        created_time: '2022-12-12T12:16:38Z'
+        deactivated_time: '2023-01-01T12:16:38Z'
+        updated_time: '2023-01-01T12:16:38Z'
+    get-all-spokes:
+      value:
+        - id: p5va08
+          name: McCullough Inc
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: asha.bhonsle@freshmart.com
+          updated_by: kishore.kumar@freshmart.com
+          created_time: '2022-12-12T12:37:32Z'
+          updated_time: '2022-12-12T12:37:32Z'
+          etag: c0025cb778d5b19ff200dc5b8d9ed2b27e06ecd195d8a012b39cda6a9492d375
+        - id: p8sjdf
+          name: spoke name12
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: shreya.ghosal@freshmart.com
+          created_time: '2022-12-12T12:16:38Z'
+          updated_time: '2022-12-12T12:16:38Z'
+          etag: 919c03695cd44d968a654fcf53479267c97393c3818f5273f27d061257daa707
+        - id: pc1ihy
+          name: Lockman LLC
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: shankar.mahadevan@freshmart.com
+          created_time: '2022-12-12T12:37:52Z'
+          updated_time: '2022-12-12T12:37:52Z'
+          etag: 54b54b2b575a0f4680b3d57d8913c31fcd3a181e6c5eb4a2705f33dbb1dd5bb2
+        - id: pg5gcy
+          name: Rau Inc
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:48Z'
+          updated_time: '2022-12-12T12:37:48Z'
+          etag: f0f6df415a00dfe10990f980017fa3a2f3f4a4f2be64fc49f910a771bdfad93d
+        - id: ph7iof
+          name: Kuphal Group
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:10Z'
+          updated_time: '2022-12-12T12:37:10Z'
+          etag: 81014def4f627e26a6944f82071afc7291a74d3527ff5d4f7731b09facfef778
+        - id: pl5w3x
+          name: Torp - Beer
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:22Z'
+          updated_time: '2022-12-12T12:37:22Z'
+          etag: 462eb06e7b0d57a21a9f9424ee0944f980c9cc20905f4128dd3a5a5ac5d59e74
+        - id: pnv0yu
+          name: Wolf Inc
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:49Z'
+          updated_time: '2022-12-12T12:37:49Z'
+          etag: a744f82214fb01fb08a9d86d1c7fdd53324e6eaf650d48362b977b2a87a54221
+        - id: ppxi6a
+          name: Wiza Inc
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: bryan.adams@freshmart.com
+          updated_by: shankar.mahadevan@freshmart.com
+          created_time: '2022-12-12T12:37:54Z'
+          updated_time: '2022-12-12T12:37:54Z'
+          etag: 111e5f0eaa984b49a07171b7daa5818ae60e364871ca9171698b3a09c74bfa25
+        - id: pq282f
+          name: White - Maggio
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:41Z'
+          updated_time: '2022-12-12T12:37:41Z'
+          etag: 5c621c021e8e28cfae8762c7eb2559519943dc766828ab43224ff1c0725d5eb4
+        - id: prj4xg
+          name: Schaden - Windler
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: bryan.adams@freshmart.com
+          updated_by: shankar.mahadevan@freshmart.com
+          created_time: '2022-12-12T12:37:19Z'
+          updated_time: '2022-12-12T12:37:19Z'
+          etag: 23ab4544d04be83c59f28f59c7b7b105f742b6928125dac7491d42fc63152e32
+        - id: pv7fiq
+          name: Raynor and Sons
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:46Z'
+          updated_time: '2022-12-12T12:37:46Z'
+          etag: 08583f7590d9d1d0707d736be1d960a2e6c8fefdd4e9d4200582d8299539beef
+        - id: pxjxqq
+          name: Herzog - Hoppe
+          retailer_id: r6eme5
+          timezone: Europe/Berlin
+          location:
+            lat: 54.25
+            long: 13.134
+          created_by: shankar.mahadevan@freshmart.com
+          updated_by: bryan.adams@freshmart.com
+          created_time: '2022-12-12T12:37:51Z'
+          updated_time: '2022-12-12T12:37:51Z'
+          etag: 4562d92ca3b5b5e050108b9a751f75cd1661e679ea02bc0219549108d1860e17
+  parameters:
+    SiteIdPath:
+      name: site_id
+      in: path
+      required: true
+      example: QAZ123
+      description: The site the request is scoped to.
+      schema:
+        type: string
+    RetailerIdPath:
+      name: retailer_id
+      in: path
+      required: true
+      description: The retailer the request is scoped to.
+      schema:
+        type: string
+    SpokeIdPath:
+      name: spoke_id
+      in: path
+      required: true
+      description: The spoke the request is scoped to.
+      schema:
+        type: string
+    PageSizeHeader:
+      description: Maximum number of retailers that should be returned in a single page
+      name: page_size
+      in: header
+      required: false
+      schema:
+        type: number
+        minimum: 1
+        maximum: 25
+        default: 25
+    PageTokenHeader:
+      name: page_token
+      description: allow(s) retrieving the next set of results.(Requests without page_token returns the first page of results.)
+      in: header
+      required: false
+      schema:
+        type: string
+    EtagHeader:
+      name: etag
+      in: header
+      required: true
+      schema:
+        type: string
+      description: An attribute used to validate the freshness of the object being modified
+    DeletedQueryParam:
+      name: deleted
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: 'If the flag set to true, it would fetch the deleted entities as well'
+    EntityParam:
+      name: entity
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Entity whose details needs to be requeued - Retailer/Site/Spoke etc
+    AcceptVersionHeader:
+      name: Accept-version
+      in: header
+      required: true
+      schema:
+        type: string
+      description: A mandatory field required to passed with all APIs determines what version of the code should be executed
+    correlationIdHeader:
+      name: X-Correlation-ID
+      in: header
+      required: true
+      schema:
+        type: string
+      description: a unique identifier value that is attached to requests and messages that allow reference to a particular transaction or event chain.
+    RetailerIdHeader:
+      name: retailer_id
+      in: header
+      required: true
+      schema:
+        type: string
+      description: The retailerID being passed as parameter to the request
+  responses:
+    SiteResponse:
+      description: A site response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Site'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/get-valid-site-response'
+            Example 2:
+              $ref: '#/components/examples/get-valid-site-response-deleted'
+      headers:
+        ETag:
+          $ref: '#/components/headers/etag'
+    SitesResponse:
+      description: List of sites
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Site'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/get-all-sites'
+      headers:
+        next_page_token:
+          $ref: '#/components/headers/next_page_token'
+    SpokeResponse:
+      description: A spoke response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Spoke'
+          examples:
+            active-spoke:
+              $ref: '#/components/examples/get-valid-spoke-response'
+            deactivated-spoke:
+              $ref: '#/components/examples/get-valid-spoke-response-after-deactivate'
+    SpokesResponse:
+      description: An array of spokes
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              spokes:
+                $ref: '#/components/schemas/Spokes'
+          examples:
+            list-of-spokes:
+              $ref: '#/components/examples/get-all-spokes'
+      headers:
+        next_page_token:
+          $ref: '#/components/headers/next_page_token'
+    DefaultErrorResponse:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+    RetailerResponse:
+      description: Retailer response structure
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Retailer'
+          examples:
+            active-retailer:
+              $ref: '#/components/examples/get-valid-retailer-response'
+            deleted-retailer:
+              $ref: '#/components/examples/get-valid-retailer-response-after-delete'
+      headers:
+        ETag:
+          $ref: '#/components/headers/etag'
+        Location:
+          $ref: '#/components/headers/location'
+    RetailersResponse:
+      description: List of retailers
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Retailer'
+          examples:
+            Example 1:
+              value:
+                - id: r6eme5
+                  name: Schroeder - Klocko
+                  created_by: bryan.adams@freshmart.com
+                  updated_by: bryan.adams@freshmart.com
+                  created_time: '2022-12-06T09:01:37Z'
+                  updated_time: '2022-12-06T09:01:37Z'
+                  etag: 66c1cb1177e9dfa9aa80320e806cd6560129c85080822b486208d82785a3d337
+                - id: r6xoew
+                  name: Aufderhar LLC
+                  created_by: bryan.adams@freshmart.com
+                  updated_by: bryan.adams@freshmart.com
+                  created_time: '2022-12-06T08:29:30Z'
+                  updated_time: '2022-12-06T08:29:30Z'
+                  etag: 9c20bfea4a4cd74c1ad0da2c17c024d1db876af1641aa8ac03fe77cf51ce8ddc
+                - id: rjqw8o
+                  name: Bradtke - Cormier
+                  created_by: bryan.adams@freshmart.com
+                  updated_by: bryan.adams@freshmart.com
+                  created_time: '2022-12-06T09:02:49Z'
+                  updated_time: '2022-12-06T09:02:49Z'
+                  etag: 30d540eb406091c924a4f962b63f60200a1dbbe2f5ac4320b0da2144f5700d29
+                - id: rleho9
+                  name: Von - Skiles
+                  created_by: bryan.adams@freshmart.com
+                  updated_by: bryan.adams@freshmart.com
+                  created_time: '2022-12-06T08:58:23Z'
+                  updated_time: '2022-12-06T08:58:23Z'
+                  etag: ee3346899269061816742dd0276ac229f0388ed7e62088ab7c56f58223ffb671
+      headers:
+        next_page_token:
+          $ref: '#/components/headers/next_page_token'
+        x-correlation-id:
+          $ref: '#/components/headers/x-correlation-id'
+    200-Ok-spoke-detached:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            Example 1:
+              value:
+                code: 200
+                message: Spoke pabcd detached successfully from site s1234
+    200-Ok-spoke-attached:
+      description: Spoke attached successfully
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            Example 1:
+              value:
+                code: 200
+                message: Spoke pabcd attached successfully to site s1234
+
+    400-Bad-Request:
+      description: 'Bad request , incorrect parameters'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/400-Error-code'
+    404-Object-Not-Found:
+      description: Retailer not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/404-Error-code'
+    412-Precondition-failed:
+      description: The Etag mismatches against object stored in the database ( i.e. the object may have been changed after it was fetched from the DB)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/412-Precondition-failed'
+    500-Internal-Server-Error:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/500-Internal-server-Error'
+    204-No-Content:
+      description: Object deleted successfully
+      headers:
+        Last-Modified:
+          $ref: '#/components/headers/Last-Modified'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/Retailer-deleted-successfully'
+    200-No-Content-status-changed:
+      description: Object deleted successfully
+      headers:
+        Last-Modified:
+          $ref: '#/components/headers/Last-Modified'
+        ETag:
+          $ref: '#/components/headers/etag'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/Status-changed-successfully'
+    AuditLogsResponse:
+      description: Audit Logs for
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/AuditLog'
+          examples:
+            Example 1:
+              value:
+                - changed_by: bryan.adams@freshmart.com
+                  change_type: delete
+                  change_details:
+                    - field: name
+                      old_value: Santa Maria
+                      new_value: Santa Monica
+                  changed_at: '2022-12-09T07:17:01Z'
+    201-create-retailer:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Retailer'
+          examples:
+            Example 1:
+              $ref: '#/components/examples/get-valid-retailer-response'
+      headers:
+        etag:
+          $ref: '#/components/headers/etag'
+    200-retailer-deactivated:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Response'
+          examples:
+            Example 1:
+              value:
+                code: 200
+                message: Retailer r12345 deactivated successfully
+  headers:
+    next_page_token:
+      schema:
+        type: string
+      description: Token to be used to fetch the next set of retailers. will be excluded when the no more pages are present
+    location:
+      schema:
+        type: string
+      description: The path of the newly created object which can be referred to by the team
+    etag:
+      schema:
+        type: string
+      description: md5 hash of the object just created this can be stored with the created object
+    Last-Modified:
+      schema:
+        type: string
+      description: 'The time at which the object was last modified, can be used to update the details on cached object'
+    x-correlation-id:
+      schema:
+        type: string
+      description: a unique identifier value that is attached to requests and messages that allow reference to a particular transaction or event chain.
+  securitySchemes:
+    API-Key-1:
+      type: oauth2
+      description: ''
+      flows:
+        clientCredentials:
+          tokenUrl: ''
+          scopes:
+            'sites:read': ' Read site configuration info'
+            'sites:create': Create a site
+            'retailers:read': Read list of retailers
+            'retailers:create': Create a retailer

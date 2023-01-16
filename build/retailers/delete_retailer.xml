@@ -1,0 +1,46 @@
+<assembly
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+        xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>delete-retailer</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}</directory>
+            <includes>
+                <include>go.mod</include>
+                <include>go.sum</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/vendor</directory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/common</directory>
+            <includes>
+                <include>**/**.go</include>
+            </includes>
+            <excludes>
+                <exclude>**/*_test.go</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}/cloud-functions/retailers</directory>
+            <includes>
+                <include>*/**.go</include>
+            </includes>
+            <excludes>
+                <exclude>**/**_test.go</exclude>
+                <exclude>**/cmd/**</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
+    <files>
+        <file>
+            <source>${project.basedir}/cloud-functions/retailers/delete_retailer.go</source>
+        </file>
+    </files>
+</assembly>

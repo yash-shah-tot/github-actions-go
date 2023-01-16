@@ -4,23 +4,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  Build:
+  Setup:
     runs-on: ubuntu-latest
     steps:
-    - name: checkout repo
-      uses: actions/checkout@v3
+      - name: checkout repo
+        uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.19
-
-    - name: Makefile clean
-      run: make clean
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
 
   Deploy:
     name: Packaging zips to github repo
-    needs: [ Build ]
+    needs: [ Setup ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -29,9 +26,11 @@ jobs:
         with:
           go-version: 1.19
 
-      - name: Makefile clean
-        run: make clean
+      - name: Adding settings.xml under local maven repository
+        uses: whelk-io/maven-settings-xml-action@v20 # TODO: Discuss whether using a 3rd party plugin is allowed or not.
+        with:
+          servers: '[{ "id": "github", "username": "yash-shah-tot", "password": "${{ secrets.GH_TOKEN }}" }]' # TODO: Discuss the token strategy. GITHUB_TOKEN is not allowing to download packages or either reset permission of GITHUB_TOKEN
 
-      - name: Deploy
+      - name: build
         run: |
-          make deploy
+          make build

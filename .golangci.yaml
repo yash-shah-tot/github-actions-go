@@ -1,0 +1,69 @@
+modules-download-mode: readonly
+
+linters:
+  enable-all: true
+  disable:
+    - wsl
+    - varnamelen
+    - nilnil
+    - gochecknoglobals
+    - funlen
+    - goerr113
+    - gci
+    - paralleltest
+    - ireturn
+    - forbidigo
+    - gofumpt
+    - exhaustivestruct
+    - nolintlint
+    - tagliatelle
+    - wrapcheck
+    - scopelint
+    - gochecknoinits
+    - goimports
+    - maligned
+    - godot
+    - prealloc
+    - gocritic
+    - interfacer
+    - golint
+    - godox
+    - exhaustruct
+    - ifshort
+    - varcheck
+    - structcheck
+    - deadcode
+    - nosnakecase
+    - rowserrcheck
+    - sqlclosecheck
+    - wastedassign
+    - contextcheck
+
+linters-settings:
+  gomnd:
+    settings:
+      mnd:
+        checks: case,condition,return
+  cyclop:
+    max-complexity: 15
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec
+        - errcheck
+        - testpackage
+        - maligned
+        - dupl
+        - lll
+        - cyclop
+        - bodyclose
+        - maintidx
+        - nestif
+    - linters:
+        - gosec
+      text: "G401: "
+    - linters:
+        - gosec
+      text: "G505: "

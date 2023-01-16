@@ -1,0 +1,127 @@
+name: CI test
+
+on:
+  pull_request:
+permissions:
+  contents: read
+env:
+  working-directory: "${{ github.workspace }}"
+  workflow-directory: "${{ github.workspace }}/.github/workflows"
+  sonar-url: https://sonarqube.tom.takeoff.com
+
+jobs:
+  code-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        go-version: [ 1.19 ]
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: Configure access to download dependencies in Go
+        shell: bash
+        run: git config --global url."https://${{ secrets.TAKEOFFBOT_TOKEN }}:@github.com/TakeoffTech/".insteadOf "https://github.com/TakeoffTech/"
+
+      - name: Load Cache
+        uses: actions/cache@v3
+        with:
+          # In order:
+          # * Module download cache
+          path: |
+            ~/go/pkg/mod
+            ~/Library/Caches/go-build
+          key: go-${{ matrix.go-version }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            go-${{ matrix.go-version }}-
+
+      - name: Test with untidy Go module
+        id: bad
+        continue-on-error: true
+        run: |
+          go mod tidy
+
+      - name: Check build
+        run: |
+          go build ./...
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        id: lint
+        with:
+          go-version: ${{ matrix.go-version }}
+          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
+          version: v1.50.1
+          # hack for files and lines viewing
+          skip-cache: true
+          args: "-v --out-${NO_FUTURE}format colored-line-number"
+
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v1'
+        with:
+          project_id: "project-id"
+          install_components: 'beta,cloud-firestore-emulator,pubsub-emulator'
+      - name: 'Use gcloud CLI'
+        run: 'gcloud info'
+      - name: 'Use gcloud emulator'
+        run: | 
+          gcloud beta emulators firestore start --quiet --project "project-id" --host-port=localhost:8040 &
+          gcloud beta emulators pubsub start --quiet --project "project-id" --host-port=localhost:8041 &
+
+      - name: Test
+        run: |
+          export FIRESTORE_EMULATOR_HOST=localhost:8040
+          export PUBSUB_EMULATOR_HOST=localhost:8041
+          go test -v ./... -coverpkg=./... -race -covermode=atomic -coverprofile=coverage.out
+          go tool cover -func=coverage.out -o=coverage_badge.out
+      - name: Upload coverage file
+        uses: actions/upload-artifact@v3
+        with:
+          name: site_info_svc_coverage
+          if-no-files-found: error
+          path: coverage_badge.out
+
+
+      - name: "SonarQube scan (PR)"
+        if: github.ref != 'refs/heads/main'
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: ./
+          args: >
+            -Dsonar.pullrequest.key=${{ github.event.number }}
+            -Dsonar.pullrequest.branch=${{ github.HEAD_REF }}
+            -Dsonar.pullrequest.base=${{ github.BASE_REF }}
+            -Dsonar.pullrequest.github.repository=${{ github.repository }}
+            -Dsonar.scm.provider=git
+
+      - name: "SonarQube scan (master)"
+        id: sonar-scan-main
+        if: github.ref == 'refs/heads/main'
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          projectBaseDir: ./
+          args: >
+            -Dsonar.scm.provider=git
+
+      # Check the Quality Gate status.
+      - name: SonarQube Quality Gate check
+        id: sonarqube-quality-gate-check
+        uses: sonarsource/sonarqube-quality-gate-action@master
+        # Force to fail step after specific time.
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} #OPTIONAL
